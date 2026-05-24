@@ -68,7 +68,7 @@ jobs:
       - name: Clean Project Workspaces
         run: |
           cd ios
-          xcodebuild clean -workspace example.xcworkspace -scheme example -configuration Release
+          RCT_NEW_ARCH_ENABLED=1 xcodebuild clean -workspace example.xcworkspace -scheme example -configuration Release
 
       - name: Generate Production JavaScript Offline Bundle
         run: |
@@ -81,7 +81,7 @@ jobs:
 
       - name: Compile Standalone Simulator Binary Archive (Release Build)
         run: |
-          xcodebuild \
+          RCT_NEW_ARCH_ENABLED=1 xcodebuild \
             -workspace ios/example.xcworkspace \
             -scheme example \
             -configuration Release \
