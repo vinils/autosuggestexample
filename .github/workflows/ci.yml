@@ -1,0 +1,120 @@
+name: CI
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+      environment:
+        description: 'Environment to deploy to'
+        type: choice
+        options:
+        - development
+        - staging
+        - production
+
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '.gitignore'
+      - '*.md'
+      - 'LICENSE'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '.gitignore'
+      - '*.md'
+      - 'LICENSE'
+  merge_group:
+    types:
+      - checks_requested
+
+concurrency:
+  group: ${{ github.run_number }}-${{ github.run_attempt }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: example-${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: 'yarn'
+
+      - name: Enable Corepack
+        run: |
+          corepack enable
+          yarn set version 4.11.0
+
+      - name: Install Monorepo Dependencies
+        run: yarn install --frozen-lockfile
+
+      # FIX 1: Compiles root source modules so example package cross-linking doesn't break
+      - name: Precompile Root Component Package
+        run: yarn prepare 
+
+      - name: Install Example Application Packages
+        run: |
+          cd example
+          yarn install --frozen-lockfile
+
+      - name: Install CocoaPods Native Dependencies
+        run: |
+          cd example/ios
+          pod install
+
+      - name: Clean Project Workspaces
+        run: |
+          cd example/ios
+          xcodebuild clean -workspace example.xcworkspace -scheme example -configuration Release
+
+      - name: Generate Production JavaScript Offline Bundle
+        run: |
+          cd example
+          npx react-native bundle \
+            --entry-file index.js \
+            --platform ios \
+            --dev false \
+            --bundle-output ios/main.jsbundle \
+            --assets-dest ios/
+
+      - name: Compile Standalone Simulator Binary Archive (Release Build)
+        run: |
+          xcodebuild \
+            -workspace example/ios/example.xcworkspace \
+            -scheme example \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -derivedDataPath example/ios/build \
+            ONLY_ACTIVE_ARCH=NO \
+            SKIP_BUNDLING=false \
+            UNLOCALIZED_RESOURCES_FOLDER_PATH="example.app"
+
+      - name: Force Embed Bundle variations into App Package Structure
+        run: |
+          TARGET_APP_DIR="example/ios/build/Build/Products/Release-iphonesimulator/example.app"
+          cp example/ios/main.jsbundle "$TARGET_APP_DIR/main.jsbundle"
+          cp example/ios/main.jsbundle "$TARGET_APP_DIR/index.jsbundle"
+
+      - name: Compress App for Distribution Artifacts
+        run: |
+          mkdir -p build-output
+          cp -R example/ios/build/Build/Products/Release-iphonesimulator/example.app build-output/
+          cd build-output && zip -r ios-simulator-build.zip example.app
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-app
+          path: build-output/ios-simulator-build.zip        
