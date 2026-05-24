@@ -59,7 +59,7 @@ jobs:
 
       - name: Install Application Packages
         run: |
-          yarn install --immutable
+          yarn install --mode update-lockfile
 
       - name: Install CocoaPods Native Dependencies
         run: |
