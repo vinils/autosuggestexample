@@ -64,7 +64,8 @@ jobs:
       - name: Install CocoaPods Native Dependencies
         run: |
           cd ios
-          pod install
+          pod repo update
+          pod install --repo-update
 
       - name: Clean Project Workspaces
         run: |
