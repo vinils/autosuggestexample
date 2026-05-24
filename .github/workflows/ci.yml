@@ -59,13 +59,12 @@ jobs:
 
       - name: Install Application Packages
         run: |
-          yarn install --mode update-lockfile
+          yarn install --immutable
 
       - name: Install CocoaPods Native Dependencies
         run: |
           cd ios
-          pod repo update
-          pod install --repo-update
+          pod install
 
       - name: Clean Project Workspaces
         run: |
