@@ -2,5 +2,3 @@
 # specific for windows script files
 *.bat text eol=crlf
 
-yarn.lock text eol=lf
-package.json text eol=lf
