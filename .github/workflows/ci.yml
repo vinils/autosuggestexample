@@ -36,7 +36,7 @@ concurrency:
 
 jobs:
   build:
-    name: example-${{ matrix.os }}
+    name: ${{ matrix.os }}
     strategy:
       matrix:
         os: [macos-latest]
@@ -57,31 +57,22 @@ jobs:
           corepack enable
           yarn set version 4.11.0
 
-      - name: Install Monorepo Dependencies
-        run: yarn install --frozen-lockfile
-
-      # FIX 1: Compiles root source modules so example package cross-linking doesn't break
-      - name: Precompile Root Component Package
-        run: yarn prepare 
-
-      - name: Install Example Application Packages
+      - name: Install Application Packages
         run: |
-          cd example
           yarn install --frozen-lockfile
 
       - name: Install CocoaPods Native Dependencies
         run: |
-          cd example/ios
+          cd ios
           pod install
 
       - name: Clean Project Workspaces
         run: |
-          cd example/ios
+          cd ios
           xcodebuild clean -workspace example.xcworkspace -scheme example -configuration Release
 
       - name: Generate Production JavaScript Offline Bundle
         run: |
-          cd example
           npx react-native bundle \
             --entry-file index.js \
             --platform ios \
@@ -92,25 +83,25 @@ jobs:
       - name: Compile Standalone Simulator Binary Archive (Release Build)
         run: |
           xcodebuild \
-            -workspace example/ios/example.xcworkspace \
+            -workspace ios/example.xcworkspace \
             -scheme example \
             -configuration Release \
             -sdk iphonesimulator \
-            -derivedDataPath example/ios/build \
+            -derivedDataPath ios/build \
             ONLY_ACTIVE_ARCH=NO \
             SKIP_BUNDLING=false \
             UNLOCALIZED_RESOURCES_FOLDER_PATH="example.app"
 
       - name: Force Embed Bundle variations into App Package Structure
         run: |
-          TARGET_APP_DIR="example/ios/build/Build/Products/Release-iphonesimulator/example.app"
-          cp example/ios/main.jsbundle "$TARGET_APP_DIR/main.jsbundle"
-          cp example/ios/main.jsbundle "$TARGET_APP_DIR/index.jsbundle"
+          TARGET_APP_DIR="ios/build/Build/Products/Release-iphonesimulator/example.app"
+          cp ios/main.jsbundle "$TARGET_APP_DIR/main.jsbundle"
+          cp ios/main.jsbundle "$TARGET_APP_DIR/index.jsbundle"
 
       - name: Compress App for Distribution Artifacts
         run: |
           mkdir -p build-output
-          cp -R example/ios/build/Build/Products/Release-iphonesimulator/example.app build-output/
+          cp -R ios/build/Build/Products/Release-iphonesimulator/example.app build-output/
           cd build-output && zip -r ios-simulator-build.zip example.app
 
       - name: Upload Build Artifacts
