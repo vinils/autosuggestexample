@@ -63,7 +63,7 @@ jobs:
       - name: Install CocoaPods Native Dependencies
         run: |
           cd ios
-          pod install
+          RCT_NEW_ARCH_ENABLED=1 pod install --repo-update
 
       - name: Clean Project Workspaces
         run: |
