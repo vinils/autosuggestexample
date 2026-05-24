@@ -58,7 +58,7 @@ jobs:
 
       - name: Install Application Packages
         run: |
-          yarn install --immutable
+          yarn install --frozen-lockfile
 
       - name: Install CocoaPods Native Dependencies
         run: |
