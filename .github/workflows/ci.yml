@@ -97,15 +97,16 @@ jobs:
           cp ios/main.jsbundle "$TARGET_APP_DIR/main.jsbundle"
           cp ios/main.jsbundle "$TARGET_APP_DIR/index.jsbundle"
 
-      - name: Verify Bundle Contents
+      - name: Verify Bundle Contains App Module
         run: |
-          TARGET_APP_DIR="ios/build/Build/Products/Debug-iphonesimulator/example.app"
-          echo "=== Checking bundle files ==="
-          ls -la "$TARGET_APP_DIR/" | grep -E "jsbundle|index" || echo "No jsbundle files found"
-          echo "=== Bundle size ==="
-          du -sh "$TARGET_APP_DIR"/main.jsbundle 2>/dev/null || echo "main.jsbundle not found"
-          echo "=== First 500 chars of bundle ==="
-          head -c 500 "$TARGET_APP_DIR"/main.jsbundle 2>/dev/null || echo "Cannot read bundle"
+          echo "=== Checking for InputAutoSugest in bundle ==="
+          grep -i "inputautosuggest\|InputAutoSugest" ios/main.jsbundle | head -5 || echo "NOT FOUND IN BUNDLE"
+          echo ""
+          echo "=== Checking bundle has App module ==="
+          grep -i "App.tsx\|App.js" ios/main.jsbundle | head -5 || echo "NOT FOUND IN BUNDLE"
+          echo ""
+          echo "=== Bundle file size ==="
+          du -h ios/main.jsbundle
 
       - name: Compress App for Distribution Artifacts
         run: |
