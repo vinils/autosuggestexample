@@ -82,6 +82,7 @@ jobs:
       - name: Compile Standalone Simulator Binary Archive (Debug Build)
         env:
           OBJC_DISABLE_CHECKS: 1
+          SKIP_BUNDLING: false
         run: |
           RCT_NEW_ARCH_ENABLED=1 xcodebuild \
             -workspace ios/example.xcworkspace \
@@ -91,7 +92,6 @@ jobs:
             -derivedDataPath ios/build \
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.0.1' \
             ONLY_ACTIVE_ARCH=NO \
-            SKIP_BUNDLING=false \
             DEBUG_INFORMATION_FORMAT=dwarf-with-dsym
 
       - name: Force Embed Bundle variations into App Package Structure
