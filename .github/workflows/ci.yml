@@ -79,20 +79,32 @@ jobs:
             --bundle-output ios/main.jsbundle \
             --assets-dest ios/
 
-        - name: Compile Standalone Simulator Binary Archive (Debug Build)
-          run: |
-            RCT_NEW_ARCH_ENABLED=1 xcodebuild \
-              -workspace ios/example.xcworkspace \
-              -scheme example \
-              -configuration Debug \
-              -sdk iphonesimulator \
-              -derivedDataPath ios/build \
-              -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.0.1' \
-              ONLY_ACTIVE_ARCH=NO \
-              SKIP_BUNDLING=true \
-              GCC_PREPROCESSOR_DEFINITIONS='$(inherited) RCT_NEW_ARCH_ENABLED=1' \
-              OTHER_LD_FLAGS='$(inherited) -weak_framework SwiftUI'
+      - name: Compile Standalone Simulator Binary Archive (Debug Build)
+        env:
+          OBJC_DISABLE_CHECKS: 1
+        run: |
+          RCT_NEW_ARCH_ENABLED=1 xcodebuild \
+            -workspace ios/example.xcworkspace \
+            -scheme example \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -derivedDataPath ios/build \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.0.1' \
+            ONLY_ACTIVE_ARCH=NO \
+            SKIP_BUNDLING=true \
+            DEBUG_INFORMATION_FORMAT=dwarf-with-dsym \
+            -quiet
 
+      - name: Verify Bundle Contents
+        run: |
+          TARGET_APP_DIR="ios/build/Build/Products/Debug-iphonesimulator/example.app"
+          echo "=== Checking bundle files ==="
+          ls -la "$TARGET_APP_DIR/" | grep -E "jsbundle|index"
+          echo "=== Bundle size ==="
+          du -sh "$TARGET_APP_DIR"/main.jsbundle 2>/dev/null || echo "main.jsbundle not found"
+          echo "=== First 500 chars of bundle ==="
+          head -c 500 "$TARGET_APP_DIR"/main.jsbundle 2>/dev/null || echo "Cannot read bundle"            
+            
       - name: Force Embed Bundle variations into App Package Structure
         run: |
           TARGET_APP_DIR="ios/build/Build/Products/Debug-iphonesimulator/example.app"
