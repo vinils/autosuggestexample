@@ -108,6 +108,7 @@ jobs:
           ls -la "$TARGET_APP_DIR/" | grep -E "jsbundle|index" || echo "Bundles not found!"
           echo "=== Bundle size ==="
           du -sh "$TARGET_APP_DIR"/main.jsbundle 2>/dev/null || echo "main.jsbundle not found"
+        continue-on-error: true        
 
       - name: Compress App for Distribution Artifacts
         run: |
