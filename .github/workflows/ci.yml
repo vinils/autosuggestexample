@@ -91,25 +91,23 @@ jobs:
             -derivedDataPath ios/build \
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.0.1' \
             ONLY_ACTIVE_ARCH=NO \
-            SKIP_BUNDLING=true \
-            DEBUG_INFORMATION_FORMAT=dwarf-with-dsym \
-            -quiet
+            SKIP_BUNDLING=false \
+            DEBUG_INFORMATION_FORMAT=dwarf-with-dsym
+
+      - name: Force Embed Bundle variations into App Package Structure
+        run: |
+          TARGET_APP_DIR="ios/build/Build/Products/Debug-iphonesimulator/example.app"
+          mkdir -p "$TARGET_APP_DIR"
+          cp ios/main.jsbundle "$TARGET_APP_DIR/main.jsbundle"
+          cp ios/main.jsbundle "$TARGET_APP_DIR/index.jsbundle"
 
       - name: Verify Bundle Contents
         run: |
           TARGET_APP_DIR="ios/build/Build/Products/Debug-iphonesimulator/example.app"
           echo "=== Checking bundle files ==="
-          ls -la "$TARGET_APP_DIR/" | grep -E "jsbundle|index"
+          ls -la "$TARGET_APP_DIR/" | grep -E "jsbundle|index" || echo "Bundles not found!"
           echo "=== Bundle size ==="
           du -sh "$TARGET_APP_DIR"/main.jsbundle 2>/dev/null || echo "main.jsbundle not found"
-          echo "=== First 500 chars of bundle ==="
-          head -c 500 "$TARGET_APP_DIR"/main.jsbundle 2>/dev/null || echo "Cannot read bundle"            
-            
-      - name: Force Embed Bundle variations into App Package Structure
-        run: |
-          TARGET_APP_DIR="ios/build/Build/Products/Debug-iphonesimulator/example.app"
-          cp ios/main.jsbundle "$TARGET_APP_DIR/main.jsbundle"
-          cp ios/main.jsbundle "$TARGET_APP_DIR/index.jsbundle"
 
       - name: Compress App for Distribution Artifacts
         run: |
