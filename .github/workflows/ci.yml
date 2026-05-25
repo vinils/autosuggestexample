@@ -75,7 +75,7 @@ jobs:
           npx react-native bundle \
             --entry-file index.js \
             --platform ios \
-            --dev true \
+            --dev false \
             --bundle-output ios/main.jsbundle \
             --assets-dest ios/
 
@@ -89,7 +89,7 @@ jobs:
             -derivedDataPath ios/build \
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.0.1' \
             ONLY_ACTIVE_ARCH=NO \
-            SKIP_BUNDLING=false
+            SKIP_BUNDLING=true
 
       - name: Force Embed Bundle variations into App Package Structure
         run: |
