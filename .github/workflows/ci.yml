@@ -95,6 +95,14 @@ jobs:
             OTHER_LD_FLAGS='-force_load $(BUILT_PRODUCTS_DIR)/React/libreact.a' \
             -suppress-warnings
 
+      - name: Remove Duplicate Debug Symbols
+        run: |
+          TARGET_APP_DIR="ios/build/Build/Products/Debug-iphonesimulator/example.app"
+          # Remove the debug dylib that's causing duplicates
+          rm -f "$TARGET_APP_DIR/example.debug.dylib" 2>/dev/null || true
+          echo "Cleaned up duplicate symbols"
+        continue-on-error: true
+
       - name: Force Embed Bundle variations into App Package Structure
         run: |
           TARGET_APP_DIR="ios/build/Build/Products/Debug-iphonesimulator/example.app"
