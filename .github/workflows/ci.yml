@@ -79,17 +79,19 @@ jobs:
             --bundle-output ios/main.jsbundle \
             --assets-dest ios/
 
-      - name: Compile Standalone Simulator Binary Archive (Debug Build)
-        run: |
-          RCT_NEW_ARCH_ENABLED=1 xcodebuild \
-            -workspace ios/example.xcworkspace \
-            -scheme example \
-            -configuration Debug \
-            -sdk iphonesimulator \
-            -derivedDataPath ios/build \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.0.1' \
-            ONLY_ACTIVE_ARCH=NO \
-            SKIP_BUNDLING=true
+        - name: Compile Standalone Simulator Binary Archive (Debug Build)
+          run: |
+            RCT_NEW_ARCH_ENABLED=1 xcodebuild \
+              -workspace ios/example.xcworkspace \
+              -scheme example \
+              -configuration Debug \
+              -sdk iphonesimulator \
+              -derivedDataPath ios/build \
+              -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.0.1' \
+              ONLY_ACTIVE_ARCH=NO \
+              SKIP_BUNDLING=true \
+              GCC_PREPROCESSOR_DEFINITIONS='$(inherited) RCT_NEW_ARCH_ENABLED=1' \
+              OTHER_LD_FLAGS='$(inherited) -weak_framework SwiftUI'
 
       - name: Force Embed Bundle variations into App Package Structure
         run: |
