@@ -68,7 +68,7 @@ jobs:
       - name: Clean Project Workspaces
         run: |
           cd ios
-          RCT_NEW_ARCH_ENABLED=1 xcodebuild clean -workspace example.xcworkspace -scheme example -configuration Release
+          RCT_NEW_ARCH_ENABLED=1 xcodebuild clean -workspace example.xcworkspace -scheme example -configuration Debug
 
       - name: Generate Production JavaScript Offline Bundle
         run: |
@@ -80,9 +80,6 @@ jobs:
             --assets-dest ios/
 
       - name: Compile Standalone Simulator Binary Archive (Debug Build)
-        env:
-          OBJC_DISABLE_CHECKS: 1
-          SKIP_BUNDLING: false
         run: |
           RCT_NEW_ARCH_ENABLED=1 xcodebuild \
             -workspace ios/example.xcworkspace \
@@ -94,18 +91,9 @@ jobs:
             ONLY_ACTIVE_ARCH=NO \
             DEBUG_INFORMATION_FORMAT=dwarf-with-dsym
 
-      - name: Remove Duplicate Debug Symbols
-        run: |
-          TARGET_APP_DIR="ios/build/Build/Products/Debug-iphonesimulator/example.app"
-          # Remove the debug dylib that's causing duplicates
-          rm -f "$TARGET_APP_DIR/example.debug.dylib" 2>/dev/null || true
-          echo "Cleaned up duplicate symbols"
-        continue-on-error: true
-
       - name: Force Embed Bundle variations into App Package Structure
         run: |
           TARGET_APP_DIR="ios/build/Build/Products/Debug-iphonesimulator/example.app"
-          mkdir -p "$TARGET_APP_DIR"
           cp ios/main.jsbundle "$TARGET_APP_DIR/main.jsbundle"
           cp ios/main.jsbundle "$TARGET_APP_DIR/index.jsbundle"
 
@@ -113,10 +101,11 @@ jobs:
         run: |
           TARGET_APP_DIR="ios/build/Build/Products/Debug-iphonesimulator/example.app"
           echo "=== Checking bundle files ==="
-          ls -la "$TARGET_APP_DIR/" | grep -E "jsbundle|index" || echo "Bundles not found!"
+          ls -la "$TARGET_APP_DIR/" | grep -E "jsbundle|index" || echo "No jsbundle files found"
           echo "=== Bundle size ==="
           du -sh "$TARGET_APP_DIR"/main.jsbundle 2>/dev/null || echo "main.jsbundle not found"
-        continue-on-error: true        
+          echo "=== First 500 chars of bundle ==="
+          head -c 500 "$TARGET_APP_DIR"/main.jsbundle 2>/dev/null || echo "Cannot read bundle"
 
       - name: Compress App for Distribution Artifacts
         run: |
@@ -128,4 +117,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ios-simulator-app
-          path: build-output/ios-simulator-build.zip        
+          path: build-output/ios-simulator-build.zip
