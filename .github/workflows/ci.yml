@@ -87,7 +87,7 @@ jobs:
             -configuration Release \
             -sdk iphonesimulator \
             -derivedDataPath ios/build \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.0.1' \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.1' \
             ONLY_ACTIVE_ARCH=NO \
             SKIP_BUNDLING=false \
             UNLOCALIZED_RESOURCES_FOLDER_PATH="example.app"
