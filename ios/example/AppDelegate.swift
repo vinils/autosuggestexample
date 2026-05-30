@@ -41,12 +41,12 @@ class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
   override func bundleURL() -> URL? {
 #if DEBUG
     // In DEBUG, try Metro dev server first
-    if let url = RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index") {
+    if let url = RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "main") {
       return url
     }
-    NSLog("Packager URL not available; falling back to embedded JS bundle (main.jsbundle)")
+    NSLog("Packager URL not available; falling back to embedded JS bundle (index.jsbundle)")
     // Fallback to embedded bundle
-    if let bundleURL = Bundle.main.url(forResource: "main", withExtension: "jsbundle") {
+    if let bundleURL = Bundle.main.url(forResource: "index", withExtension: "jsbundle") {
       return bundleURL
     }
     NSLog("ERROR: Could not find main.jsbundle in app bundle!")
