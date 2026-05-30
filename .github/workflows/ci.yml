@@ -60,16 +60,6 @@ jobs:
         run: |
           yarn install --frozen-lockfile
 
-      - name: Install CocoaPods Native Dependencies
-        run: |
-          cd ios
-          RCT_NEW_ARCH_ENABLED=1 pod install --repo-update
-
-      - name: Clean Project Workspaces
-        run: |
-          cd ios
-          RCT_NEW_ARCH_ENABLED=1 xcodebuild clean -workspace example.xcworkspace -scheme example -configuration Debug
-
       - name: Generate Production JavaScript Offline Bundle
         run: |
           npx react-native bundle \
@@ -78,6 +68,11 @@ jobs:
             --dev false \
             --bundle-output ios/main.jsbundle \
             --assets-dest ios/
+
+      - name: Install CocoaPods Native Dependencies
+        run: |
+          cd ios
+          RCT_NEW_ARCH_ENABLED=1 pod install --repo-update
 
       - name: Compile Standalone Simulator Binary Archive (Debug Build)
         run: |
