@@ -87,6 +87,9 @@ jobs:
             echo "Removing duplicate example.debug.dylib..."
             rm -f "$DUP_PATH/example.debug.dylib"
           fi
+          echo "Removing duplicate dylib..."
+          rm -f "${TARGET_BUILD_DIR}/${PRODUCT_NAME}.app/example.debug.dylib"
+
 
       - name: Compile Standalone Simulator Binary Archive (Debug Build)
         run: |
