@@ -76,8 +76,8 @@ jobs:
             --entry-file index.js \
             --platform ios \
             --dev false \
-            --bundle-output ios/main.jsbundle \
-            --assets-dest ios/
+            --bundle-output ios/example/main.jsbundle \
+            --assets-dest ios/example/
 
       - name: Compile Standalone Simulator Binary Archive (Debug Build)
         run: |
@@ -94,19 +94,19 @@ jobs:
       - name: Force Embed Bundle variations into App Package Structure
         run: |
           TARGET_APP_DIR="ios/build/Build/Products/Debug-iphonesimulator/example.app"
-          cp ios/main.jsbundle "$TARGET_APP_DIR/main.jsbundle"
-          cp ios/main.jsbundle "$TARGET_APP_DIR/index.jsbundle"
+          cp ios/example/main.jsbundle "$TARGET_APP_DIR/main.jsbundle"
+          cp ios/example/main.jsbundle "$TARGET_APP_DIR/index.jsbundle"
 
       - name: Verify Bundle Contains App Module
         run: |
           echo "=== Checking for InputAutoSugest in bundle ==="
-          grep -i "inputautosuggest\|InputAutoSugest" ios/main.jsbundle | head -5 || echo "NOT FOUND IN BUNDLE"
+          grep -i "inputautosuggest\|InputAutoSugest" ios/example/main.jsbundle | head -5 || echo "NOT FOUND IN BUNDLE"
           echo ""
           echo "=== Checking bundle has App module ==="
-          grep -i "App.tsx\|App.js" ios/main.jsbundle | head -5 || echo "NOT FOUND IN BUNDLE"
+          grep -i "App.tsx\|App.js" ios/example/main.jsbundle | head -5 || echo "NOT FOUND IN BUNDLE"
           echo ""
           echo "=== Bundle file size ==="
-          du -h ios/main.jsbundle
+          du -h ios/example/main.jsbundle
 
       - name: Compress App for Distribution Artifacts
         run: |
