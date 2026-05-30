@@ -74,6 +74,13 @@ jobs:
           cd ios
           RCT_NEW_ARCH_ENABLED=1 pod install --repo-update
 
+      - name: Clean duplicate React dylib/framework
+        run: |
+          cd ios
+          echo "Removing duplicate React.framework and example.debug.dylib if present..."
+          rm -rf "${PWD}/build/Build/Products/Debug-iphonesimulator/React.framework"
+          rm -rf "${PWD}/build/Build/Products/Debug-iphonesimulator/example.debug.dylib"
+
       - name: Compile Standalone Simulator Binary Archive (Debug Build)
         run: |
           RCT_NEW_ARCH_ENABLED=1 xcodebuild \
