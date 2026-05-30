@@ -77,9 +77,16 @@ jobs:
       - name: Clean duplicate React dylib/framework
         run: |
           cd ios
-          echo "Removing duplicate React.framework and example.debug.dylib if present..."
-          rm -rf "${PWD}/build/Build/Products/Debug-iphonesimulator/React.framework"
-          rm -rf "${PWD}/build/Build/Products/Debug-iphonesimulator/example.debug.dylib"
+          echo "Checking for duplicate React.framework or example.debug.dylib..."
+          DUP_PATH="${PWD}/build/Build/Products/Debug-iphonesimulator"
+          if [ -d "$DUP_PATH/React.framework" ]; then
+            echo "Removing duplicate React.framework..."
+            rm -rf "$DUP_PATH/React.framework"
+          fi
+          if [ -f "$DUP_PATH/example.debug.dylib" ]; then
+            echo "Removing duplicate example.debug.dylib..."
+            rm -f "$DUP_PATH/example.debug.dylib"
+          fi
 
       - name: Compile Standalone Simulator Binary Archive (Debug Build)
         run: |
