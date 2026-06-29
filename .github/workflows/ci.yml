@@ -42,6 +42,8 @@ jobs:
         os: [macos-latest]
       fail-fast: false
     runs-on: ${{ matrix.os }}
+    env:
+      XCODE_VERSION: 16.4.0    
     steps:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -60,70 +62,60 @@ jobs:
         run: |
           yarn install --frozen-lockfile
 
-      - name: Generate Production JavaScript Offline Bundle
-        run: |
-          npx react-native bundle \
-            --entry-file index.js \
-            --platform ios \
-            --dev false \
-            --bundle-output ios/main.jsbundle \
-            --assets-dest ios/
+      - name: Generate nitrogen code
+        run: yarn nitrogen
+
+      - name: Use appropriate Xcode version
+        uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # v1.6.0
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
 
       - name: Install CocoaPods Native Dependencies
         run: |
           cd ios
-          RCT_NEW_ARCH_ENABLED=1 pod install --repo-update
+          pod install --repo-update
+          cd ../..
 
-      - name: Clean duplicate React dylib/framework
+      - name: Generate Production JavaScript Offline Bundle
         run: |
-          cd ios
-          echo "Checking for duplicate React.framework or example.debug.dylib..."
-          DUP_PATH="${PWD}/build/Build/Products/Debug-iphonesimulator"
-          if [ -d "$DUP_PATH/React.framework" ]; then
-            echo "Removing duplicate React.framework..."
-            rm -rf "$DUP_PATH/React.framework"
-          fi
-          if [ -f "$DUP_PATH/example.debug.dylib" ]; then
-            echo "Removing duplicate example.debug.dylib..."
-            rm -f "$DUP_PATH/example.debug.dylib"
-          fi
-          echo "Removing duplicate dylib..."
-          rm -f "${TARGET_BUILD_DIR}/${PRODUCT_NAME}.app/example.debug.dylib"
-
+          npx react-native bundle \
+            --platform ios \
+            --dev false \
+            --entry-file index.js \
+            --bundle-output ios/main.jsbundle \
+            --assets-dest ios/main.jsbundle_assets
 
       - name: Compile Standalone Simulator Binary Archive (Debug Build)
         run: |
-          RCT_NEW_ARCH_ENABLED=1 xcodebuild \
+          xcodebuild \
             -workspace ios/example.xcworkspace \
             -scheme example \
-            -configuration Debug \
+            -configuration Release \
             -sdk iphonesimulator \
             -derivedDataPath ios/build \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.0.1' \
+            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5' \
             ONLY_ACTIVE_ARCH=NO \
-            DEBUG_INFORMATION_FORMAT=dwarf-with-dsym
+            DEBUG_INFORMATION_FORMAT=dwarf-with-dsym \
+            clean build
 
-      - name: Force Embed Bundle variations into App Package Structure
+      - name: Embed bundle into .app (safety copy)
         run: |
-          TARGET_APP_DIR="ios/build/Build/Products/Debug-iphonesimulator/example.app"
-          cp ios/main.jsbundle "$TARGET_APP_DIR/main.jsbundle"
-          cp ios/main.jsbundle "$TARGET_APP_DIR/index.jsbundle"
-
-      - name: Verify Bundle Contains App Module
-        run: |
-          echo "=== Checking for InputAutoSugest in bundle ==="
-          grep -i "inputautosuggest\|InputAutoSugest" ios/main.jsbundle | head -5 || echo "NOT FOUND IN BUNDLE"
-          echo ""
-          echo "=== Checking bundle has App module ==="
-          grep -i "App.tsx\|App.js" ios/main.jsbundle | head -5 || echo "NOT FOUND IN BUNDLE"
-          echo ""
-          echo "=== Bundle file size ==="
-          du -h ios/main.jsbundle
+          APP_DIR="ios/build/Build/Products/Release-iphonesimulator/example.app"
+          echo "Checking for bundle at $APP_DIR/main.jsbundle"
+          # Copy bundle and asset files into the .app if not already embedded
+          if [ -f ios/main.jsbundle ]; then
+            cp ios/main.jsbundle "$APP_DIR/" || true
+          fi
+          if [ -d ios/main.jsbundle_assets ]; then
+            cp -R ios/main.jsbundle_assets/* "$APP_DIR/" || true
+          fi
+          # Verify
+          ls -la "$APP_DIR" | sed -n '1,200p'
 
       - name: Compress App for Distribution Artifacts
         run: |
           mkdir -p build-output
-          cp -R ios/build/Build/Products/Debug-iphonesimulator/example.app build-output/
+          cp -R ios/build/Build/Products/Release-iphonesimulator/example.app build-output/
           cd build-output && zip -r ios-simulator-build.zip example.app
 
       - name: Upload Build Artifacts
