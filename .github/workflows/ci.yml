@@ -39,7 +39,7 @@ jobs:
     name: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest]
+        os: [macos-15]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
