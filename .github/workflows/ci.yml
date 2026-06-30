@@ -79,8 +79,8 @@ jobs:
             --platform ios \
             --dev false \
             --entry-file index.js \
-            --bundle-output ios/example/main.jsbundle \
-            --assets-dest ios/example/main.jsbundle.assets
+            --bundle-output ios/main.jsbundle \
+            --assets-dest ios//main.jsbundle_assets
 
       - name: Compile Standalone Simulator Binary Archive (Debug Build)
         run: |
@@ -106,11 +106,11 @@ jobs:
        
           echo "Checking for bundle at $APP_DIR/main.jsbundle"
           # Copy bundle and asset files into the .app if not already embedded
-          if [ -f ios/example/main.jsbundle ]; then
-            cp ios/example/main.jsbundle "$APP_DIR/" || true
+          if [ -f ios/main.jsbundle ]; then
+            cp ios/main.jsbundle "$APP_DIR/" || true
           fi
-          if [ -d ios/example/main.jsbundle_assets ]; then
-            cp -R ios/example/main.jsbundle_assets/* "$APP_DIR/" || true
+          if [ -d ios/main.jsbundle_assets ]; then
+            cp -R ios/main.jsbundle_assets/* "$APP_DIR/" || true
           fi
           # Verify
           ls -la "$APP_DIR" | sed -n '1,200p'
