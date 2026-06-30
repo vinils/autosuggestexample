@@ -109,20 +109,6 @@ jobs:
             DEBUG_INFORMATION_FORMAT=dwarf-with-dsym \
             clean build
 
-      - name: Embed bundle into .app (safety copy)
-        run: |
-          APP_DIR="ios/build/Build/Products/Release-iphonesimulator/example.app"
-          echo "Checking for bundle at $APP_DIR/main.jsbundle"
-          # Copy bundle and asset files into the .app if not already embedded
-          if [ -f ios/main.jsbundle ]; then
-            cp ios/main.jsbundle "$APP_DIR/" || true
-          fi
-          if [ -d ios/main.jsbundle_assets ]; then
-            cp -R ios/main.jsbundle_assets/* "$APP_DIR/" || true
-          fi
-          # Verify
-          ls -la "$APP_DIR" | sed -n '1,200p'
-
       - name: Compress App for Distribution Artifacts
         run: |
           mkdir -p build-output
