@@ -106,11 +106,11 @@ jobs:
        
           echo "Checking for bundle at $APP_DIR/main.jsbundle"
           # Copy bundle and asset files into the .app if not already embedded
-          if [ -f ios/main.jsbundle ]; then
-            cp ios/main.jsbundle "$APP_DIR/" || true
+          if [ -f ios/example/main.jsbundle ]; then
+            cp ios/example/main.jsbundle "$APP_DIR/" || true
           fi
-          if [ -d ios/main.jsbundle_assets ]; then
-            cp -R ios/main.jsbundle_assets/* "$APP_DIR/" || true
+          if [ -d ios/example/main.jsbundle_assets ]; then
+            cp -R ios/example/main.jsbundle_assets/* "$APP_DIR/" || true
           fi
           # Verify
           ls -la "$APP_DIR" | sed -n '1,200p'
@@ -118,7 +118,7 @@ jobs:
       - name: Compress App for Distribution Artifacts
         run: |
           mkdir -p build-output
-          cp -R ios/build/Build/Products/Release-iphonesimulator/example.app build-output/
+          cp -R "${{ env.IOS_APP_PATH }}" build-output/
           cd build-output && zip -r ios-simulator-build.zip example.app
 
       - name: Upload Build Artifacts
